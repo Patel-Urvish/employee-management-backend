@@ -154,10 +154,10 @@ public class EmployeeController : ControllerBase
     }
 
 
-    [HttpDelete("Delete/{EmployeeId}")]
-    public IActionResult DeleteEmployee(int EmployeeId)
+    [HttpDelete("Delete/{employeeId}")]
+    public IActionResult DeleteEmployee(int employeeId)
     {
-        var emp = context.Employees.Find(EmployeeId);
+        var emp = context.Employees.Find(employeeId);
         if (emp == null)
         {
             return NotFound("Employee Not Found.");
