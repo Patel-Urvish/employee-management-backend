@@ -2,6 +2,8 @@
 using EmployeeManagement.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace EmployeeManagement.Controllers;
 
@@ -24,6 +26,25 @@ public class DesignationController : ControllerBase
         return Ok(degList);
     }
 
+    [Route("filter")]
+    [HttpGet]
+    public async Task<IActionResult> Filter(int? departmentId, string? search)
+    {
+        var query = context.Designations.AsQueryable();
+        if(departmentId.HasValue)
+        {
+            query = query.Where(d => d.DepartmentId == departmentId);
+        }
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            query = query.Where(d => d.DesignationName.ToLower() == search.ToLower());
+        }
+
+        var data = await query.ToListAsync();
+        return Ok(data);
+    }
+
     [HttpPost("Add")]
     public IActionResult AddDesignation(DesignationDto designationDto)
     {
@@ -40,7 +61,7 @@ public class DesignationController : ControllerBase
 
         context.Designations.Add(designation);
         context.SaveChangesAsync();
-        return Ok("Designation Added  Successfully");
+        return Ok("Designation Added Successfully");
     }
 
     [HttpPut("Update")]

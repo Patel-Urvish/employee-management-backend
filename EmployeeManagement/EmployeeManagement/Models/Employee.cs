@@ -10,8 +10,8 @@ namespace EmployeeManagement.Models;
 public partial class Employee
 {
     [Key]
-    [Column("Employee")]
-    public int Employee1 { get; set; }
+    [Column("EmployeeId")]
+    public int EmployeeId { get; set; }
 
     [StringLength(50)]
     [Unicode(false)]
