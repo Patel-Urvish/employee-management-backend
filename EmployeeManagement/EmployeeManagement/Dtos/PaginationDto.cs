@@ -6,5 +6,6 @@ public class PaginationDto
     public int PageSize { get; set; } = 10;
     public string SortBy { get; set; } = String.Empty;
     public string SortDirection { get; set; } = "asc";
+    public string? Search { get; set; }
 }
 

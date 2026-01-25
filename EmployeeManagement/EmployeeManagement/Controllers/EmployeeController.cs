@@ -173,6 +173,18 @@ public class EmployeeController : ControllerBase
     {
         var query = context.Employees.AsQueryable();
 
+        if (!string.IsNullOrWhiteSpace(pagination.Search))
+        {
+            string search = pagination.Search.ToLower();
+
+            query = query.Where(e =>
+                e.Name.ToLower().Contains(search) ||
+                e.Email.ToLower().Contains(search) ||
+                e.Contact.ToLower().Contains(search) ||
+                e.City.ToLower().Contains(search)
+            );
+        }
+
         // Sorting
         switch (pagination.SortBy.ToLower())
         {
