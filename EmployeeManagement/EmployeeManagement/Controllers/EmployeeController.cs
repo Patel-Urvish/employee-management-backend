@@ -54,6 +54,40 @@ public class EmployeeController : ControllerBase
         return Ok(employee);
     }
 
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var employee = await context.Employees
+            .Where(e => e.Email == loginDto.Email && e.Contact == loginDto.Contact)
+            .Select(e => new
+            {
+                e.EmployeeId,
+                e.Name,
+                e.Email,
+                e.Contact,
+                e.DesignationId  ,
+                e.Role
+            })
+            .FirstOrDefaultAsync();
+
+        if (employee == null)
+        {
+            return Unauthorized("Invalid email or contact number.");
+        }
+
+        return Ok(new
+        {
+            Message = "Login successful",
+            Employee = employee
+        });
+    }
+
+
 
     //[Route("filter")]
     //[HttpGet]
@@ -103,6 +137,7 @@ public class EmployeeController : ControllerBase
         employee.State = employeeDto.State;
         employee.PinCode = employeeDto.PinCode;
         employee.Address = employeeDto.Address;
+        employee.Role = employeeDto.Role;
         employee.DesignationId = employeeDto.DesignationId;
         employee.CreatedDate = DateTime.Now;
         employee.UpdatedDate = DateTime.Now;

@@ -41,6 +41,8 @@ public partial class Employee
     [Unicode(false)]
     public string? Address { get; set; }
 
+    public string? Role { get; set; }
+
     public int DesignationId { get; set; }
 
     [Column(TypeName = "datetime")]

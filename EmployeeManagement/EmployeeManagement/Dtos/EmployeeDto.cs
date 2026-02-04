@@ -15,6 +15,7 @@ public class EmployeeDto
     public string State { get; set; } = null!;
     public string PinCode { get; set; } = null!;
     public string? Address { get; set; }
+    public string? Role { get; set; }
     public int DesignationId { get; set; }
     public DateTime? CreatedDate { get; set; }
     public DateTime? UpdatedDate { get; set; }
