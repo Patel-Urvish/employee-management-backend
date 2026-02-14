@@ -18,6 +18,13 @@ builder.Services.AddRouting(options =>
 });
 
 
+builder.Services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+{
+    builder.AllowAnyOrigin()
+           .AllowAnyMethod()
+           .AllowAnyHeader();
+}));
+
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
@@ -30,7 +37,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("MyPolicy");
 app.UseAuthorization();
 
 app.MapControllers();
