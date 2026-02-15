@@ -2,6 +2,7 @@
 using EmployeeManagement.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeManagement.Controllers;
 
@@ -25,7 +26,7 @@ public class DepartmentController : ControllerBase
     }
 
     [HttpPost("Add")]
-    public IActionResult AddDepartment(DepartmentDto departmentDto)
+    public async Task<IActionResult> AddDepartment(DepartmentDto departmentDto)
     {
 
         var dept = context.Departments.Any(d => d.DepartmentName.ToLower() == departmentDto.DepartmentName.ToLower());
@@ -39,28 +40,48 @@ public class DepartmentController : ControllerBase
 
 
         context.Departments.Add(department);
-        context.SaveChangesAsync();
-        return Ok("Department Added  Successfully");
+        await context.SaveChangesAsync();
+        return Ok(new { message = "Department Added Successfully" });
     }
 
     [HttpPut("Update")]
-    public IActionResult UpdateDepartment(DepartmentDto departmentDto)
+    public async Task<IActionResult> UpdateDepartment(DepartmentDto departmentDto)
     {
         var existingDept = context.Departments.Find(departmentDto.DepartmentId);
         if (existingDept == null)
         {
             return NotFound("Department Not Found.");
         }
-        var department = new Department();
-        department.DepartmentName = departmentDto.DepartmentName;
-        department.IsActive = departmentDto.IsActive;
+        existingDept.DepartmentName = departmentDto.DepartmentName;
+        existingDept.IsActive = departmentDto.IsActive;
 
-        context.SaveChangesAsync();
-        return Ok("Department Updated Successfully");
+        await context.SaveChangesAsync();
+        return Ok(new { message = "Department Updated Successfully" });
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetDepartmentById(int id)
+    {
+        var department = await context.Departments
+            .Where(e => e.DepartmentId == id)
+            .Select(e => new DepartmentDto
+            {
+                DepartmentId = e.DepartmentId,
+                DepartmentName = e.DepartmentName,
+                IsActive = e.IsActive,
+                
+            })
+            .FirstOrDefaultAsync();
+
+        if (department == null)
+        {
+            return NotFound("Department not found.");
+        }
+        return Ok(new { data = department });
     }
 
     [HttpDelete("Delete/{departmentId}")]
-    public IActionResult DeleteDepartment(int departmentId)
+    public async Task<IActionResult> DeleteDepartment(int departmentId)
     {
         var existingDept = context.Departments.Find(departmentId);
         if (existingDept == null)
@@ -69,7 +90,7 @@ public class DepartmentController : ControllerBase
         }
 
         context.Remove(existingDept);
-        context.SaveChangesAsync();
-        return Ok("Department Deleted Successfully");
+        await context.SaveChangesAsync();
+        return Ok(new { message = "Department Deleted Successfully" });
     }
 }
