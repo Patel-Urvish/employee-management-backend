@@ -19,11 +19,44 @@ public class DesignationController : ControllerBase
 
     [Route("GetAll")]
     [HttpGet]
-    public IActionResult GetAllDesignation()
+    public async Task<IActionResult> GetAllDesignation()
     {
-        var degList = context.Designations.ToList();
+        var degList = await context.Designations.Include(d => d.Department)
+            .Select(d => new
+            {
+                d.DesignationId,
+                d.DesignationName,
+                d.DepartmentId,
+                Department = new
+                {
+                    departmentId = d.Department.DepartmentId,
+                    departmentName = d.Department.DepartmentName
+                }
+
+            }).ToListAsync();
 
         return Ok(degList);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetDesignationById(int id)
+    {
+        var designation = await context.Designations
+            .Where(e => e.DesignationId == id)
+            .Select(e => new DesignationDto
+            {
+                DepartmentId = e.DepartmentId,
+                DesignationId = e.DesignationId,
+                DesignationName = e.DesignationName,
+
+            })
+            .FirstOrDefaultAsync();
+
+        if (designation == null)
+        {
+            return NotFound("Designation not found.");
+        }
+        return Ok(new { data = designation });
     }
 
     [Route("filter")]
@@ -41,12 +74,23 @@ public class DesignationController : ControllerBase
             query = query.Where(d => d.DesignationName.ToLower() == search.ToLower());
         }
 
-        var data = await query.ToListAsync();
+        var data = await query.Select(d => new
+        {
+            d.DesignationId,
+            d.DesignationName,
+            d.DepartmentId,
+            Department = new
+            {
+                departmentId = d.Department.DepartmentId,
+                departmentName = d.Department.DepartmentName
+            }
+        }).ToListAsync();
+
         return Ok(data);
     }
 
     [HttpPost("Add")]
-    public IActionResult AddDesignation(DesignationDto designationDto)
+    public async Task<IActionResult> AddDesignation(DesignationDto designationDto)
     {
 
         var deg = context.Designations.Any(d => d.DesignationName.ToLower() == designationDto.DesignationName.ToLower());
@@ -60,8 +104,8 @@ public class DesignationController : ControllerBase
 
 
         context.Designations.Add(designation);
-        context.SaveChangesAsync();
-        return Ok("Designation Added Successfully");
+        await context.SaveChangesAsync();
+        return Ok(new { message = "Designation Added Successfully" });
     }
 
     [HttpPut("Update")]
@@ -72,16 +116,16 @@ public class DesignationController : ControllerBase
         {
             return NotFound("Designation Not Found.");
         }
-        var designation = new Designation();
-        designation.DesignationName = designationDto.DesignationName;
-        designation.DepartmentId = designationDto.DepartmentId;
+
+        existingDeg.DesignationName = designationDto.DesignationName;
+        existingDeg.DepartmentId = designationDto.DepartmentId;
 
         context.SaveChangesAsync();
-        return Ok("Designation Updated Successfully");
+        return Ok(new { message = "Designation Updated Successfully" });
     }
 
     [HttpDelete("Delete/{designationId}")]
-    public IActionResult DeleteDesignation(int designationId)
+    public async Task<IActionResult> DeleteDesignation(int designationId)
     {
         var existingDeg = context.Designations.Find(designationId);
         if (existingDeg == null)
@@ -90,7 +134,7 @@ public class DesignationController : ControllerBase
         }
 
         context.Remove(existingDeg);
-        context.SaveChangesAsync();
-        return Ok("Designation Deleted Successfully");
+        await context.SaveChangesAsync();
+        return Ok(new { message = "Designation Deleted Successfully" });
     }
 }
