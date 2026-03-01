@@ -20,7 +20,29 @@ public class EmployeeController : ControllerBase
     [HttpGet]
     public IActionResult GetAllEmployees()
     {
-        var empList = context.Employees.ToList();
+        var empList = context.Employees.Include(e => e.Designation)
+            .ThenInclude(e => e.Department).
+            Select(e => new EmployeeDto
+        {
+            EmployeeId = e.EmployeeId,
+            Name = e.Name,
+            Contact = e.Contact,
+            Email = e.Email,
+            City = e.City,
+            State = e.State,
+            PinCode = e.PinCode,
+            Address = e.Address,
+            Role = e.Role,
+            DesignationId = e.DesignationId,
+            CreatedDate = e.CreatedDate,
+            UpdatedDate = e.UpdatedDate,
+            DesignationName = e.Designation.DesignationName,
+            DepartmentId = e.Designation.Department.DepartmentId,
+            DepartmentName = e.Designation.Department.DepartmentName
+
+
+
+            }).ToList();
 
         return Ok(empList);
     }
@@ -124,7 +146,7 @@ public class EmployeeController : ControllerBase
 
         if (exists)
         {
-            return BadRequest("Contact or Email already exists.");
+            return BadRequest(new { message = "Contact or Email already exists." });
         }
 
         // Map DTO → Entity
@@ -140,13 +162,12 @@ public class EmployeeController : ControllerBase
         employee.Role = employeeDto.Role;
         employee.DesignationId = employeeDto.DesignationId;
         employee.CreatedDate = DateTime.Now;
-        employee.UpdatedDate = DateTime.Now;
         
 
         context.Employees.Add(employee);
         await context.SaveChangesAsync();
 
-        return Ok("Employee added successfully.");
+        return Ok(new { message = "Employee added successfully." });
     }
 
 
@@ -185,7 +206,7 @@ public class EmployeeController : ControllerBase
 
         await context.SaveChangesAsync();
 
-        return Ok("Employee updated successfully.");
+        return Ok(new { message = "Employee updated successfully." });
     }
 
 
@@ -200,7 +221,7 @@ public class EmployeeController : ControllerBase
 
         context.Remove(emp);
         context.SaveChangesAsync();
-        return Ok("Employee Deleted Successfully");
+        return Ok(new { message = "Employee Deleted Successfully" });
     }
 
     [HttpGet("list")]

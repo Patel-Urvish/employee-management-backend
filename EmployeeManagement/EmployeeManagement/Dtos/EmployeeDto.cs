@@ -19,4 +19,7 @@ public class EmployeeDto
     public int DesignationId { get; set; }
     public DateTime? CreatedDate { get; set; }
     public DateTime? UpdatedDate { get; set; }
+    public string? DesignationName { get; set; }
+    public int ? DepartmentId { get; set; }
+    public string? DepartmentName { get; set; }
 }
